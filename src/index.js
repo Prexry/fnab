@@ -7,7 +7,8 @@ import { Provider } from "react-redux";
 import store from "./store/store";
 import CustomNight from "./CustomNight";
 
-const initialState = {
+const stateFromStorage = localStorage.getItem("stages");
+const initialState = stateFromStorage ? JSON.parse(stateFromStorage) : {
   mode: "NORMAL",
   Freddy: 10,
   Bonnie: 10,
@@ -17,14 +18,21 @@ const initialState = {
 
 const Start = () => {
   const [Start, setStart] = useState(false);
-  const [stages, setStages] = useState(initialState);
+
+  const [stages, reactSetStages] = useState(initialState);
+  function setStages(getNewStages) {
+    const newStages = getNewStages(stages);
+    reactSetStages(newStages);
+    localStorage.setItem("stages", JSON.stringify(newStages));
+  };
+
+  const [hourLength, setHourLength] = useState(89000);
 
   useEffect(() => {
     console.log(window.innerHeight > window.innerWidth);
     if (window.innerHeight > window.innerWidth) {
       window.alert(
-        `Para uma melhor experiência, vire seu celular para o modo de paisagem (modo deitado)
-                 ~ For a better experience, please rotate your phone to landscape mode`
+        "Rotate your phone to landscape mode for a better experience."
       );
     }
   }, []);
@@ -35,11 +43,13 @@ const Start = () => {
         <div className="custom-night">
           <CustomNight
             setStart={setStart}
-            state={{ ranges: stages, setStages }}
+            state={{ ranges: stages, setStages, setHourLength }}
+            hourLength={hourLength}
+            setHourLength={setHourLength}
           />
         </div>
       ) : (
-        <Controller stages={stages} setStart={setStart} />
+        <Controller stages={stages} setStart={setStart} hourLength={hourLength} />
       )}
     </>
   );

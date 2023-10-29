@@ -1,3 +1,8 @@
+import React from "react";
+import ReactDOM from "react-dom";
+import styles from "../css/CustomNight.module.css"
+import goldenFreddyAudio from "../media/Sounds/golden_freddy.ogg";
+
 ///SHOW STAGE
 import Stage from "../media/Textures/Cams/Stage.webp";
 import Stage_b_c_f from "../media/Textures/Cams/Stage-b-c-f.webp";
@@ -32,6 +37,7 @@ import SupplyCloset_b from "../media/Textures/Cams/SupplyRoom-b.webp";
 ///WEST HALL
 import WestHall from "../media/Textures/Cams/West_Hall.webp";
 import WestHall_b from "../media/Textures/Cams/West_Hall-b.webp";
+import GoldenFreddyPoster from "../media/Textures/Cams/GoldenFreddyPoster.png"
 import FoxyHallway from "../media/Textures/Foxy-Hallway.webp";
 
 ///WEST HALL CORNER
@@ -80,6 +86,7 @@ const cameraImages = {
   SupplyCloset_b,
   WestHall,
   WestHall_b,
+  FoxyHallway,
   WHallCorner,
   WHallCorner_b,
   Restrooms,
@@ -104,13 +111,44 @@ const cameraImages = {
   Kitchen_c_f,
 };
 
-export default function getCam(animatronics, camera, foxy = "") {
-  let location = camera.trim().replaceAll(" ", "");
+function GoldenFreddyJumpscare({ setGoldenFreddy }) {
+  React.useEffect(() => {
+    setTimeout(() => {
+      window.location.reload();
+      setGoldenFreddy(false);
+    }, 5000);
+  }, [])
 
-  if (location === "W.HallCorner") location = "WHallCorner";
-  if (location === "E.HallCorner") location = "EHallCorner";
+  const golden = new Audio(goldenFreddyAudio);
+  golden.play();
+  return <div className={styles.golden_freddy} />;
+}
+
+function getCam(animatronics, camera, foxy = "", goldenFreddy, setGoldenFreddy) {
+  let location = camera.trim().replaceAll(" ", "").replaceAll(".", "");
+  if (location === "WestHall" & foxy === "_3") return FoxyHallway;
+
+  if (location === "WHallCorner") {
+    if (goldenFreddy || Math.random() < 0.00001) { // 1 in 100000 chance
+      setGoldenFreddy(true);
+      setTimeout((goldenFreddyEnabled) => {
+        if (goldenFreddyEnabled) {
+          setGoldenFreddy(false);
+          ReactDOM.render(
+            <GoldenFreddyJumpscare setGoldenFreddy={setGoldenFreddy} />,
+            document.getElementById("root"),
+          );
+        }
+      }, 5000, goldenFreddy);
+      return GoldenFreddyPoster;
+    }
+  } else if (goldenFreddy) {
+    setGoldenFreddy(false);
+  }
 
   return cameraImages[
     `${location}${animatronics}${location === "PirateCove" ? foxy : ""}`
   ];
 }
+
+export { GoldenFreddyJumpscare, getCam };
